@@ -7,13 +7,29 @@
 
 #------------------------LOAD PACKAGES-------------------------
 #install.packages("librarian")     #Run if librarian is not already installed
-librarian::shelf(ggplot2, cowplot, lubridate, rvest,dplyr, viridis, tidyverse, 
+librarian::shelf(ggplot2, cowplot, lubridate, rvest, dplyr, viridis, tidyverse, 
                  countrycode, corrplot, cttobin/ggthemr,  ggalt, gridExtra, ggcorrplot,
                  ggExtra, ggrepel, knitr, kableExtra, grid, wppExplorer)
 
 #Load themes
 theme_set(theme_classic(base_size = 16))
 ggthemr("fresh")
+
+# PARSE COMMAND LINE ARGUMENTS --------------------------------------------
+remote_root <- "https://raw.githubusercontent.com/simonkassel/compoundriskdata/master/"
+local_root <- "."
+
+root <- remote_root
+args <- commandArgs(trailingOnly = TRUE)
+if ('--local' %in% args){
+  root <- local_root
+}
+
+
+# Load data ---------------------------------------------------------------
+
+riskflags <- read.csv(file.path(root, 'data/published/Compound_Risk_Flag_Sheets.csv')) %>%
+  select(-X)
 
 #------------------Global plots -------------------------
 #Loading world database
@@ -88,16 +104,16 @@ varsthree <- vars %>%
   select( Fr_IFS, Fr_FSI, Fr_FSID, Fr_RE, Fr_AE, Fr_AF)
 
 #Correlations
-corr <- round(cor(vars, na.rm=T, use='pairwise.complete.obs'), 1)
-corrone <- round(cor(varsone, na.rm=T, use='pairwise.complete.obs'), 1)
-corrtwo <- round(cor(varstwo, na.rm=T, use='pairwise.complete.obs'), 1)
-corrthree <- round(cor(varsthree, na.rm=T, use='pairwise.complete.obs'), 1)
+corr <- round(cor(vars, use='pairwise.complete.obs'), 1)
+corrone <- round(cor(varsone, use='pairwise.complete.obs'), 1)
+corrtwo <- round(cor(varstwo, use='pairwise.complete.obs'), 1)
+corrthree <- round(cor(varsthree, use='pairwise.complete.obs'), 1)
 
 #Pvalues
-p.mat <- cor_pmat(vars, na.rm=T, use='pairwise.complete.obs') 
-p.matone <- cor_pmat(varsone, na.rm=T, use='pairwise.complete.obs') 
-p.mattwo <- cor_pmat(varstwo, na.rm=T, use='pairwise.complete.obs') 
-p.matthree <- cor_pmat(varsthree, na.rm=T, use='pairwise.complete.obs') 
+p.mat <- cor_pmat(vars, use='pairwise.complete.obs') 
+p.matone <- cor_pmat(varsone, use='pairwise.complete.obs') 
+p.mattwo <- cor_pmat(varstwo, use='pairwise.complete.obs') 
+p.matthree <- cor_pmat(varsthree, use='pairwise.complete.obs') 
 
 #Plots
 plot <- ggcorrplot(corr, 
@@ -310,8 +326,8 @@ colnames(rvar) <- c("EX_Covid", "EX_FoodS", "EX_Macro", "EX_Fiscal", "EX_Socio",
 "EM_Covid", "EM_FoodS", "EM_Macro", "EM_Fiscal",  "EM_Natural", "EM_Fragile")
 
 #Calculate correlations
-rcorr <- round(cor(rvar, na.rm=T, use='pairwise.complete.obs'), 1)
-rp.mat <- cor_pmat(rvar, na.rm=T, use='pairwise.complete.obs') 
+rcorr <- round(cor(rvar, use='pairwise.complete.obs'), 1)
+rp.mat <- cor_pmat(rvar, use='pairwise.complete.obs') 
 
 #Plot
 plot <- ggcorrplot(rcorr, 
@@ -432,6 +448,7 @@ ggsave("Plots/compareriskcalcs.pdf", comp, width = 14, height = 10)
 #-------Ranking exercise--------------------
 #Function to create top 20 ranked countries
 names <- colnames(riskflags[3:17])
+
 rankcountry <- lapply(riskflags[names], function(xx){
   paste(riskflags$Countryname[order(-xx)][1:30], round(xx[order(-xx)][1:30], 1))
 })
@@ -674,16 +691,3 @@ riskpopprop <- ggplot(riskypop, aes(Region, Riskprop, fill=Riskcat)) + geom_hist
 comb <- grid.arrange(riskpopg, riskpopprop, nrow = 2)
 
 ggsave("Plots/popatrisk.pdf", comb, width = 12, height = 10)
-
-
-
-  
-
-
-
-
-
-
-  
-  
-  

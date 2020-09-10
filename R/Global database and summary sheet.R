@@ -28,7 +28,7 @@ fragilitysheet <- read.csv(file.path(root, 'data/processed/fragilitysheet.csv'))
 macrosheet <-  read.csv(file.path(root, 'data/processed/macrosheet.csv'))
 Naturalhazardsheet <-  read.csv(file.path(root, 'data/processed/Naturalhazards.csv'))
 Socioeconomic_sheet <-  read.csv(file.path(root, "data/processed/Socioeconomic_sheet.csv"))
-countrylist <- read.csv(file.path(remote_root, "countrylist.csv"))
+countrylist <- read.csv(file.path(remote_root, "data/external/countrylist.csv"))
 
 #Join datasets
 globalrisk <- left_join(countrylist, healthsheet, by=c("Countryname", "Country")) %>%
@@ -631,3 +631,4 @@ insertPlot(crxls, 1, xy = c("AA", 5), width = 11.5, height =9.5, fileType = "png
 
 #Save the final worksheet
 saveWorkbook(crxls, file = "data/published/Compound_Risk_Monitor.xlsx", overwrite = TRUE)
+

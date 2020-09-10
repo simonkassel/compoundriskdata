@@ -173,10 +173,11 @@ health <- left_join(countrylist, HIS, by="Country") %>%
   left_join(., covidcurrent, by="Country") %>%
   arrange(Country)
 
-write.csv(health, "Risk_sheets/healthsheet.csv")
+write.csv(health, "data/processed/healthsheet.csv")
 
 #---------------------------------LOAD FOOD SECURITY DATA---------------------------
-#Proteus Index
+# Proteus Index -----------------------------------------------------------
+
 proteus <- read.csv("https://raw.githubusercontent.com/ljonestz/compoundriskdata/master/Indicator_dataset/proteus.csv")
 
 proteus <- proteus %>%
@@ -192,7 +193,7 @@ upperrisk <- quantile(proteus$F_Proteus_Score, probs = c(0.90), na.rm=T)
 lowerrisk <- quantile(proteus$F_Proteus_Score, probs = c(0.10), na.rm=T)
 proteus <- normfuncpos(proteus,upperrisk, lowerrisk, "F_Proteus_Score") 
 
-#Artemis
+# Artemis -------------------------------
 artemis <- read.csv("~/Google Drive/PhD/R code/Compound Risk/artemis.csv")
 
 upperrisk <- 0.2
@@ -206,7 +207,7 @@ artemis <- artemis %>%
                                nomatch = NULL)) %>%
   select(-X)
 
-#FEWSNET
+# FEWSNET ----------------------------
 fews <- read.csv("https://raw.githubusercontent.com/ljonestz/compoundriskdata/master/Indicator_dataset/fewsnet.csv")
 
 fews <- fews %>%
@@ -269,7 +270,7 @@ foodsecurity <- left_join(countrylist, proteus, by="Country") %>%
   left_join(., artemis, by="Country") %>%
   arrange(Country)
 
-write.csv(foodsecurity, "Risk_sheets/foodsecuritysheet.csv")
+write.csv(foodsecurity, "data/processed/foodsecuritysheet.csv")
 
 #---------------------------LOAD DEBT DATA----------------------------
 #SCRAPE DEBT DATA
@@ -360,7 +361,7 @@ debtsheet <- left_join(countrylist, debttab, by="Country") %>%
   left_join(., igc, by="Country") %>%
   arrange(Country)
 
-write.csv(debtsheet, "Risk_sheets/debtsheet.csv")
+write.csv(debtsheet, "data/processed/debtsheet.csv")
 
 #--------------------------MACRO DATA---------------------------------------
 macro <- read.csv("https://raw.githubusercontent.com/ljonestz/compoundriskdata/master/Indicator_dataset/macro.csv")
@@ -390,9 +391,10 @@ gdp <- normfuncneg(gdp,upperrisk, lowerrisk, "M_GDP_IMF_2019minus2020")
 #COVID Economic Stimulus Index
 #Load file
 url <- "http://web.boun.edu.tr/elgin/CESI_11.xlsx" #Note: may need to check for more recent versions
-destfile <- "Indicator_dataset/cesiraw.xlsx"
+destfile <- "data/external/cesiraw.xlsx"
 curl::curl_download(url, destfile)
 cesi <- read_excel(destfile)
+unlink(destfile)
 
 colnames(cesi) <- paste0("M_", colnames(cesi))
 cesi <- cesi %>%
@@ -575,7 +577,7 @@ acleddata <- aclednorm(acleddata, 400, 0, "Fr_ACLED_event_same_month_difference_
 acleddata <- aclednorm(acleddata, 400, 0, "Fr_ACLED_event_month_annual_difference_perc", "Fr_ACLED_event_last30d")
 acleddata <- aclednorm(acleddata, 800, 0, "Fr_ACLED_event_month_threeyear_difference_perc", "Fr_ACLED_event_last30d")
 
-write.csv(acleddata, "Indicator_Dataset/ACLEDnormalised.csv")
+write.csv(acleddata, "Indicator_dataset/ACLEDnormalised.csv")
 
 #-------------------------------------FRAGILITY SHEET--------------------------------------
 countrylist <- read.csv("https://raw.githubusercontent.com/ljonestz/compoundriskdata/master/Indicator_dataset/countrylist.csv")

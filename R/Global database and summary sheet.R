@@ -624,10 +624,11 @@ map2 <- ggplot(data = worldmap, mapping = aes(x = long, y = lat, group = group))
 
 #Join the maps and print to the system
 jointmap <- cowplot::plot_grid(map, map2, ncol = 1, align = c("hv"))
-print(jointmap)
+tmp_uri = "/tmp/jointmap.png"
+ggsave(tmp_uri, jointmap, width = 11.5, height = 9.5)
 
 #Insert plot into the worksheet
-insertPlot(crxls, 1, xy = c("AA", 5), width = 11.5, height =9.5, fileType = "png", units = "in")
+insertImage(crxls, 1, tmp_uri, width = 11.5, height = 9.5, startRow=5, startCol = 'AA', units = "in")
 
 #Save the final worksheet
 saveWorkbook(crxls, file = "data/published/Compound_Risk_Monitor.xlsx", overwrite = TRUE)

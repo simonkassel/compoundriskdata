@@ -15,7 +15,7 @@ Alongside the above, separate scirpts are included in the main folder and can be
 
 ## Outcome databases
 
-The main databases can be found in the **Risk_Sheets** folders. These include:
+The main databases can be found in the **data/published/** folder. These include:
 
 **Global_compound_risk_database.csv** is a compilation of all raw source indicators that feed into the Compound Risk Monitor. These are labelled according to each of the eight risk components (see labelling codes below). 
 
@@ -50,8 +50,8 @@ EXISTING_ -> Existing risk scores.
 
 ## Sequence in generating CRM outputs
 
-To replicate the databases and plots used in the Compound Risk Monitor start by running **Coumpound_Risk_database.r**. This will generate all necessary indicator datasets and risk sheets. Then run **Global database and summary sheet.R** to calculate component and overall risk scores for each country. Lastly, run **Compound Plots.r** to generate summary plots and comparison graphs.
+To replicate the databases and plots used in the Compound Risk Monitor start by running **R/Coumpound_Risk_database.r**. This will generate all necessary indicator datasets and risk sheets. Then run **R/Global database and summary sheet.R** to calculate component and overall risk scores for each country. If you would like to read intermediate indicator datasets and risk sheets locally, use the `--local` flag (i.e. `Rscript R/Global database and summary sheet.R --local`). Lastly, run **R/Compound Plots.r** to generate summary plots and comparison graphs.
 
-## Details on risk calculation and aggreation steps
+## Details on risk calculation and aggregation steps
 
 Full details on the normalisation proceedures, steps taken to calculate component risk scores and generation of total risk scores can be found in the **Indicator aggregation** file in the **Risk_sheets** folder

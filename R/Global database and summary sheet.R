@@ -12,13 +12,10 @@ librarian::shelf(
 )
 
 # PARSE COMMAND LINE ARGUMENTS --------------------------------------------
-remote_root <- "https://raw.githubusercontent.com/simonkassel/compoundriskdata/master/"
-local_root <- "."
-
-root <- remote_root
+root <- "https://raw.githubusercontent.com/simonkassel/compoundriskdata/master/"
 args <- commandArgs(trailingOnly = TRUE)
-if ("--local" %in% args) {
-  root <- local_root
+if (length(args) > 0) {
+  root <- args[1]
 }
 
 #--------------------CREATE GLOBAL DATABASE WITH ALL RISK SHEETS-----------------

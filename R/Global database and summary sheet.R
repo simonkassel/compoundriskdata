@@ -95,7 +95,7 @@ riskflags <- globalrisk %>%
     ),
     EMERGING_RISK_NATURAL_HAZARDS = pmax(NH_UKMO_TOTAL.RISK.NEXT.6.MONTHS_norm,
       NH_GDAC_Hazard_Score_Norm,
-      NH_Inform_Crisis_Norm,
+      NH_INFORM_Crisis_Norm,
       na.rm = T
     ),
     EMERGING_RISK_FRAGILITY_INSTITUTIONS = case_when(

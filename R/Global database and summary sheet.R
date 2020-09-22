@@ -372,7 +372,7 @@ reliabilitysheet <- globalrisk %>%
       select(
         NH_UKMO_TOTAL.RISK.NEXT.6.MONTHS_norm,
         NH_GDAC_Hazard_Score_Norm,
-        NH_Inform_Crisis_Norm
+        NH_INFORM_Crisis_Norm
       )),
     na.rm = T
     ) / 3,
@@ -672,7 +672,7 @@ cond("macrosheet", which(colnames(macrosheet) == "M_Economic_and_Financial_score
 cond("macrosheet", which(colnames(macrosheet) == "M_CESI_Index_norm"), which(colnames(macrosheet) == "M_CESI_Index_norm"))
 cond("Naturalhazardsheet", which(colnames(Naturalhazardsheet) == "NH_UKMO_TOTAL.RISK.NEXT.6.MONTHS_norm"), which(colnames(Naturalhazardsheet) == "NH_UKMO_TOTAL.RISK.NEXT.12.MONTHS_norm"))
 cond("Naturalhazardsheet", which(colnames(Naturalhazardsheet) == "NH_GDAC_Hazard_Score_Norm"), which(colnames(Naturalhazardsheet) == "NH_GDAC_Hazard_Score_Norm"))
-cond("Naturalhazardsheet", which(colnames(Naturalhazardsheet) == "NH_Inform_Crisis_Norm"), which(colnames(Naturalhazardsheet) == "NH_Inform_Crisis_Norm"))
+cond("Naturalhazardsheet", which(colnames(Naturalhazardsheet) == "NH_INFORM_Crisis_Norm"), which(colnames(Naturalhazardsheet) == "NH_INFORM_Crisis_Norm"))
 cond("Socioeconomic_sheet", which(colnames(Socioeconomic_sheet) == "S_OCHA_Covid.vulnerability.index_norm"), which(colnames(Socioeconomic_sheet) == "S_OCHA_Covid.vulnerability.index_norm"))
 
 # Conditional formatting colours

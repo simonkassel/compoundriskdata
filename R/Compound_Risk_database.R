@@ -8,7 +8,7 @@
 #install.packages("librarian")     #Run if librarian is not already installed
 librarian::shelf(cowplot, lubridate, rvest, viridis, countrycode,
                  clipr, awalker89/openxlsx, dplyr, tidyverse, readxl,
-                 gsheet)
+                 gsheet, zoo)
 
 #--------------------FUNCTION TO CALCULATE NORMALISED SCORES-----------------
 #Function to normalise with upper and lower bounds (when low score = high vulnerability)
@@ -30,6 +30,14 @@ normfuncpos <- function(df,upperrisk, lowerrisk, col1){
                                         ))
   df
 }
+
+#
+##
+### ********************************************************************************************
+####    CREATE HEALTH SHEET USING A RANGE OF SOURCE INDICATORS
+### ********************************************************************************************
+##
+#
 
 #--------------------HIS Score-----------------
 HIS <- read.csv("https://raw.githubusercontent.com/ljonestz/compoundriskdata/master/Indicator_dataset/HIS.csv")
@@ -58,6 +66,11 @@ upperrisk <- quantile(OXrollback$H_Oxrollback_score, probs = c(0.9), na.rm=T)
 lowerrisk <- quantile(OXrollback$H_Oxrollback_score, probs = c(0.1), na.rm=T)
 
 OXrollback <- normfuncpos(OXrollback, upperrisk, lowerrisk, "H_Oxrollback_score")
+
+#--------------------------Oxford Response Tracker----------------------------
+Oxres <- read.csv("https://raw.githubusercontent.com/OxCGRT/covid-policy-tracker/master/data/OxCGRT_latest.csv")
+
+
 
 #-------------------------COVID projections--------------------
 covid <- "https://covid19-projections.com/#view-projections"
@@ -175,6 +188,14 @@ health <- left_join(countrylist, HIS, by="Country") %>%
 
 write.csv(health, "data/processed/healthsheet.csv")
 
+#
+##
+### ********************************************************************************************
+####    CREATE FOOD SECURITY SHEET USING A RANGE OF SOURCE INDICATORS
+### ********************************************************************************************
+##
+#
+
 #---------------------------------LOAD FOOD SECURITY DATA---------------------------
 # Proteus Index -----------------------------------------------------------
 
@@ -272,6 +293,14 @@ foodsecurity <- left_join(countrylist, proteus, by="Country") %>%
 
 write.csv(foodsecurity, "data/processed/foodsecuritysheet.csv")
 
+#
+##
+### ********************************************************************************************
+####    CREATE DEBT SHEET USING A RANGE OF SOURCE INDICATORS
+### ********************************************************************************************
+##
+#
+
 #---------------------------LOAD DEBT DATA----------------------------
 #SCRAPE DEBT DATA
 debtweb <- "https://www.worldbank.org/en/topic/debt/brief/covid-19-debt-service-suspension-initiative"
@@ -363,6 +392,14 @@ debtsheet <- left_join(countrylist, debttab, by="Country") %>%
 
 write.csv(debtsheet, "data/processed/debtsheet.csv")
 
+#
+##
+### ********************************************************************************************
+####    CREATE MACRO  SHEET USING A RANGE OF SOURCE INDICATORS
+### ********************************************************************************************
+##
+#
+
 #--------------------------MACRO DATA---------------------------------------
 macro <- read.csv("https://raw.githubusercontent.com/ljonestz/compoundriskdata/master/Indicator_dataset/macro.csv")
 macro <- macro %>%
@@ -431,6 +468,14 @@ macrosheet <- left_join(countrylist, macro, by="Country") %>%
   arrange(Country)
 
 write.csv(macrosheet, "Risk_sheets/macrosheet.csv")
+
+#
+##
+### ********************************************************************************************
+####    CREATE FRAGILITY  SHEET USING A RANGE OF SOURCE INDICATORS
+### ********************************************************************************************
+##
+#
 
 #--------------------------------FRAGILITY DATA-----------------------------------------
 fsi <- read.csv("https://raw.githubusercontent.com/ljonestz/compoundriskdata/master/Indicator_dataset/FSI.csv")
@@ -579,6 +624,52 @@ acleddata <- aclednorm(acleddata, 800, 0, "Fr_ACLED_event_month_threeyear_differ
 
 write.csv(acleddata, "Indicator_dataset/ACLEDnormalised.csv")
 
+#Load VIEWS data
+#Download and unzip file from View site
+download.file("http://ucdp.uu.se/downloads/views/predictions_cm.zip", "Indicator_dataset/Viewsrawzip")
+
+state_views <- read.csv(unz("Indicator_dataset/Viewsrawzip", "predictions_sb_cm/average_base_sb.csv"))
+nonstate_views <- read.csv(unz("Indicator_dataset/Viewsrawzip", "predictions_ns_cm/average_base_ns.csv"))
+oneside_views <- read.csv(unz("Indicator_dataset/Viewsrawzip", "predictions_os_cm/average_base_os.csv"))
+
+#Calculate month converter
+elapsed_months <- function(end_date, start_date) {
+  ed <- as.POSIXlt(end_date)
+  sd <- as.POSIXlt(start_date)
+  12 * (ed$year - sd$year) + (ed$mon - sd$mon)
+}
+
+#Select next six months state
+state_views_6m <- state_views %>%
+  filter(month_id >= elapsed_months(Sys.time(), as.Date("1980-01-01")) &
+           month_id <= elapsed_months(Sys.time(), as.Date("1980-01-01")) + 5) %>%
+  group_by(isoab) %>%
+  summarise(Fr_state6m = max(average_base_sb, na.rm=T)) 
+
+#Select next six months nonstate
+nonstate_views_6m <- nonstate_views %>%
+  filter(month_id >= elapsed_months(Sys.time(), as.Date("1980-01-01")) &
+           month_id <= elapsed_months(Sys.time(), as.Date("1980-01-01")) + 5) %>%
+  group_by(isoab) %>%
+  summarise(Fr_nonstate6m = max(average_base_ns, na.rm=T)) 
+
+#Select next six months oneside
+oneside_views_6m <- oneside_views %>%
+  filter(month_id >= elapsed_months(Sys.time(), as.Date("1980-01-01")) &
+           month_id <= elapsed_months(Sys.time(), as.Date("1980-01-01")) + 5) %>%
+  group_by(isoab) %>%
+  summarise(Fr_oneside6m = max(average_base_os, na.rm=T)) 
+
+#Combine into one
+views_6m_proj <- full_join(state_views_6m, nonstate_views_6m, by="isoab") %>%
+  full_join(., oneside_views_6m, by="isoab") %>%
+  rename(Country = isoab) 
+
+#Normalise values
+views_6m_proj <- normfuncpos(views_6m_proj, 0.8, 0.1, "Fr_state6m")
+views_6m_proj <- normfuncpos(views_6m_proj, 0.8, 0.1, "Fr_nonstate6m")
+views_6m_proj <- normfuncpos(views_6m_proj, 0.8, 0.1, "Fr_oneside6m")
+
 #-------------------------------------FRAGILITY SHEET--------------------------------------
 countrylist <- read.csv("https://raw.githubusercontent.com/ljonestz/compoundriskdata/master/Indicator_dataset/countrylist.csv")
 countrylist <- countrylist %>% 
@@ -589,9 +680,18 @@ fragilitysheet <- left_join(countrylist, fsi, by="Country")  %>%
   left_join(., reign,  by="Country") %>%
   left_join(., gpi, by="Country") %>%
   left_join(., acleddata, by="Country") %>%
+  left_join(., views_6m_proj, by="Country") %>%
   arrange(Country)
 
 write.csv(fragilitysheet, "Risk_sheets/fragilitysheet.csv")
+
+#
+##
+### ********************************************************************************************
+####    CREATE SOCIO-ECONOMIC SHEET USING A RANGE OF SOURCE INDICATORS
+### ********************************************************************************************
+##
+#
 
 #--------------------------------SOCIO-ECONOMIC DATA and SHEET------------------------------------------
 #Load OCHA database
@@ -604,6 +704,14 @@ upperrisk <- quantile(ocha$S_OCHA_Covid.vulnerability.index, probs = c(0.95), na
 lowerrisk <- quantile(ocha$S_OCHA_Covid.vulnerability.index, probs = c(0.05), na.rm=T)
 ocha <- normfuncpos(ocha,upperrisk, lowerrisk, "S_OCHA_Covid.vulnerability.index") 
 write.csv(ocha, "Risk_sheets/Socioeconomic_sheet.csv")
+
+#
+##
+### ********************************************************************************************
+####    CREATE NATURAL HAZARDS SHEET USING A RANGE OF SOURCE INDICATORS
+### ********************************************************************************************
+##
+#
 
 #-------------------------------NATURAL HAZARDS SHEET------------------------------------------------
 #Load UKMO dataset
@@ -781,7 +889,6 @@ informnathaz <- informnathaz %>%
 #Normalise scores
 informnathaz <- normfuncpos(informnathaz, 9, 1, "NH_Hazard_Score")
 
-
 #-------------------------------------------CREATE NATURAL HAZARD SHEET------------------------------
 countrylist <- read.csv("https://raw.githubusercontent.com/ljonestz/compoundriskdata/master/Indicator_dataset/countrylist.csv")
 countrylist <- countrylist %>% 
@@ -797,11 +904,121 @@ nathazardfull <- left_join(countrylist, nathaz, by="Country") %>%
 
 write.csv(nathazardfull, "Risk_sheets/Naturalhazards.csv")
 
+#
+##
+### ********************************************************************************************
+####    CREATE ACAPS SHEET USING A RANGE OF SOURCE INDICATORS
+### ********************************************************************************************
+##
+#
+
+#--------------------LOAD ACAPS realtime database-------------------------------------------
+#Load website
+acaps <- read_html("https://www.acaps.org/countries")
+
+#Select relevant columns from the site all merged into a single string
+country <- acaps %>%
+  html_nodes(".severity__country__label, .severity__country__crisis__label, .severity__country__crisis__value") %>%
+  html_text() 
+
+#Find country labels in the string (select 2nd lag behind a numberic variable if the given item is a character)
+countryisolate <- suppressWarnings(ifelse(!is.na(as.numeric(as.character(country))) & lag(is.na(as.numeric(as.character(country))), 2),
+                                          lag(country, 2), 
+                                          NA
+))
+
+#For all variables that have a country label, change to iso categories
+country[which(!is.na(countryisolate)) - 2] <- countrycode(country[which(!is.na(countryisolate)) - 2],
+                                                          origin = 'country.name', 
+                                                          destination = 'iso3c',
+                                                          nomatch = NULL)
+#Collect list of all world countries
+world <- map_data("world")
+world <- world %>%
+  dplyr::rename(Country = region) %>%
+  dplyr::mutate(Country = suppressWarnings(countrycode(Country,
+                                                       origin = 'country.name', 
+                                                       destination = 'iso3c',
+                                                       nomatch = NULL)))
+
+countrynam <-levels(as.factor(world$Country))
+
+#Find all countrys in the list and replace with correct country name (then fill in remaining NAs)
+gap <- ifelse(country %in% countrynam, country, NA)
+gaplist <- na.locf(gap)
+
+#Create new dataframe with correct countrynames
+acapslist <- cbind.data.frame(country, gaplist)
+acapslist <- acapslist[!acapslist$country %in% countrynam,]
+acapslist <- acapslist %>% 
+  filter(country != "Countrylevel")
+
+#Create new column with the risk scores (and duplicate for missing rows up until the correct value)
+acapslist$risk <- suppressWarnings(ifelse(!is.na(as.numeric(as.character(acapslist$country))), as.numeric(as.character(acapslist$country)), NA))
+acapslist$risk <- c(na.locf(acapslist$risk), NA)
+
+#Remove duplicate rows and numeric rows
+acapslist <- acapslist %>%
+  filter(is.na(as.numeric(as.character(country)))) %>%
+  filter(country != "Country level") %>%
+  filter(country != "Country Level") %>%
+  filter(country != "")
+
+#Save csv with full acapslist
+write.csv(acapslist, "Indicator_dataset/acaps.csv")
+
+#List of countries with specific hazards
+conflictnams <- acapslist %>%
+  filter(str_detect(acapslist$country, c("conflict|Crisis|crisis|Conflict|Refugees|refugees|
+                                         Migration|migration|violence|violence|Boko Haram"))) %>%
+  filter(risk >= 4) %>% 
+  select(gaplist)
+
+conflictnams <- unique(conflictnams)
+
+#Food security countries
+foodnams <- acapslist[str_detect(acapslist$country, c("Food|food|famine|famine")),] %>%
+  filter(risk >= 4) %>% 
+  select(gaplist) 
+
+foodnams <- unique(foodnams)
+
+#Natural hazard countries
+naturalnams <-  acapslist[str_detect(acapslist$country, c("Floods|floods|Drought|drought|Cyclone|cyclone|
+                                                          Flooding|flooding|Landslides|landslides|
+                                                          Earthquake|earthquake")),] %>%
+filter(risk >= 3) %>% 
+  select(gaplist) 
+
+naturalnams <- unique(naturalnams)
+
+#Epidemic countries
+healthnams <- acapslist[str_detect(acapslist$country, c("Epidemic|epidemic")),] %>%
+filter(risk >= 3) %>% 
+  select(gaplist) 
+
+healthnams <- unique(healthnams)
+
+#Load countries in the CRM
+countrylist <- read.csv("https://raw.githubusercontent.com/ljonestz/compoundriskdata/master/Indicator_dataset/countrylist.csv")
+
+acapssheet <- countrylist %>% 
+  select(-X) %>%
+  mutate(Fr_conflict_acled = case_when(Country %in% unlist(as.list(conflictnams)) ~ 10,
+                              TRUE ~ 0),
+         H_health_acled = case_when(Country %in% unlist(as.list(healthnams)) ~ 10,
+                            TRUE ~ 0),
+         NH_natural_acled = case_when(Country %in% unlist(as.list(naturalnams)) ~ 10,
+                             TRUE ~ 0),
+         F_food_acled = case_when(Country %in% unlist(as.list(foodnams)) ~ 10,
+                          TRUE ~ 0))
+
+#Write ACAPS sheet
+write.csv(acapssheet, "Risk_sheets/acapssheet.csv")
 
 
 
-
-
+  
 
 
 

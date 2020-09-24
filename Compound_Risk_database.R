@@ -82,9 +82,9 @@ covidtable <- covid %>%
   html_table(fill = TRUE)
 
 #Isolate regional tables
-covideu <- covidtable[[9]]
-covidworld <- covidtable[[10]]
-covidus <- covidtable[[8]][1,]
+covideu <- covidtable[[8]]
+covidworld <- covidtable[[9]]
+covidus <- covidtable[[7]][1,]
 colnames(covidus)[1] <- c("Country")
 colnames(covideu)[1] <- c("Country")
 colnames(covidworld)[1] <- c("Country")
@@ -427,13 +427,14 @@ gdp <- normfuncneg(gdp,upperrisk, lowerrisk, "M_GDP_IMF_2019minus2020")
 
 #COVID Economic Stimulus Index
 #Load file
-url <- "http://web.boun.edu.tr/elgin/CESI_11.xlsx" #Note: may need to check for more recent versions
-destfile <- "data/external/cesiraw.xlsx"
+url <- "http://web.boun.edu.tr/elgin/CESI_12.xlsx" #Note: may need to check for more recent versions
+destfile <- "Indicator_dataset/cesiraw.xlsx"
 curl::curl_download(url, destfile)
 cesi <- read_excel(destfile)
 unlink(destfile)
 
 colnames(cesi) <- paste0("M_", colnames(cesi))
+colnames(cesi) <- gsub("_1.*","",colnames(cesi))
 cesi <- cesi %>%
   mutate(Country = countrycode(M_Country, 
                         origin = 'country.name',
@@ -442,9 +443,9 @@ cesi <- cesi %>%
 ) 
 
 #Perform PCA
-cesipca <- prcomp(cesi %>% select(M_fiscal_11, M_ratecut_11, M_reserve_req_11, 
-                                  M_macrofin_11, M_othermonetary_11, M_bopgdp_11,
-                                  M_otherbop_11), 
+cesipca <- prcomp(cesi %>% select(M_fiscal, M_ratecut, M_reserve_req, 
+                                  M_macrofin, M_othermonetary, M_bopgdp,
+                                  M_otherbop), 
                   center = TRUE,
                   scale. = TRUE
 )
@@ -467,7 +468,7 @@ macrosheet <- left_join(countrylist, macro, by="Country") %>%
   left_join(., cesi, by="Country") %>%
   arrange(Country)
 
-write.csv(macrosheet, "Risk_sheets/macrosheet.csv")
+write.csv(macrosheet, "data/processed/macrosheet.csv")
 
 #
 ##
@@ -683,7 +684,7 @@ fragilitysheet <- left_join(countrylist, fsi, by="Country")  %>%
   left_join(., views_6m_proj, by="Country") %>%
   arrange(Country)
 
-write.csv(fragilitysheet, "Risk_sheets/fragilitysheet.csv")
+write.csv(fragilitysheet, "data/processed/fragilitysheet.csv")
 
 #
 ##
@@ -703,7 +704,7 @@ ocha <- ocha %>%
 upperrisk <- quantile(ocha$S_OCHA_Covid.vulnerability.index, probs = c(0.95), na.rm=T)
 lowerrisk <- quantile(ocha$S_OCHA_Covid.vulnerability.index, probs = c(0.05), na.rm=T)
 ocha <- normfuncpos(ocha,upperrisk, lowerrisk, "S_OCHA_Covid.vulnerability.index") 
-write.csv(ocha, "Risk_sheets/Socioeconomic_sheet.csv")
+write.csv(ocha, "data/processed/Socioeconomic_sheet.csv")
 
 #
 ##
@@ -902,7 +903,7 @@ nathazardfull <- left_join(countrylist, nathaz, by="Country") %>%
   drop_na(Country) %>%
   arrange(Country)
 
-write.csv(nathazardfull, "Risk_sheets/Naturalhazards.csv")
+write.csv(nathazardfull, "/data/processed/Naturalhazards.csv")
 
 #
 ##
@@ -1004,17 +1005,17 @@ countrylist <- read.csv("https://raw.githubusercontent.com/ljonestz/compoundrisk
 
 acapssheet <- countrylist %>% 
   select(-X) %>%
-  mutate(Fr_conflict_acled = case_when(Country %in% unlist(as.list(conflictnams)) ~ 10,
+  mutate(Fr_conflict_acaps = case_when(Country %in% unlist(as.list(conflictnams)) ~ 10,
                               TRUE ~ 0),
-         H_health_acled = case_when(Country %in% unlist(as.list(healthnams)) ~ 10,
+         H_health_acaps = case_when(Country %in% unlist(as.list(healthnams)) ~ 10,
                             TRUE ~ 0),
-         NH_natural_acled = case_when(Country %in% unlist(as.list(naturalnams)) ~ 10,
+         NH_natural_acaps = case_when(Country %in% unlist(as.list(naturalnams)) ~ 10,
                              TRUE ~ 0),
-         F_food_acled = case_when(Country %in% unlist(as.list(foodnams)) ~ 10,
+         F_food_acaps = case_when(Country %in% unlist(as.list(foodnams)) ~ 10,
                           TRUE ~ 0))
 
 #Write ACAPS sheet
-write.csv(acapssheet, "Risk_sheets/acapssheet.csv")
+write.csv(acapssheet, "data/processed/acapssheet.csv")
 
 
 

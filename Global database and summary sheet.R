@@ -56,7 +56,7 @@ globalrisk <- left_join(countrylist, healthsheet, by = "Country") %>%
   left_join(., macrosheet, by = "Country") %>%
   left_join(., Naturalhazardsheet, by = "Country") %>%
   left_join(., Socioeconomic_sheet, by = "Country") %>%
-  left_join(., acapssheet, by = "country") %>%
+  left_join(., acapssheet, by = "Country") %>%
   distinct(Country, .keep_all = TRUE) %>%
   drop_na(Country)
 
@@ -83,13 +83,13 @@ riskflags <- globalrisk %>%
       H_new_cases_smoothed_per_million_norm,
       H_new_deaths_smoothed_per_million_norm,
       H_Covidproj_Projected_Deaths_._1M_norm,
-      H_health_acled,
+      H_health_acaps,
       na.rm = T
     ),
     EMERGING_RISK_FOOD_SECURITY = case_when(
       !is.na(F_Fewsnet_Score_norm) ~ pmax(F_FAO_6mFPV_norm,
         F_Artemis_Score_norm,
-        F_food_acled,
+        F_food_acaps,
         na.rm = T
       ),
       TRUE ~ F_FAO_6mFPV_norm
@@ -106,7 +106,7 @@ riskflags <- globalrisk %>%
     EMERGING_RISK_NATURAL_HAZARDS = pmax(NH_UKMO_TOTAL.RISK.NEXT.6.MONTHS_norm,
       NH_GDAC_Hazard_Score_Norm,
       NH_INFORM_Crisis_Norm,
-      NH_natural_acled,
+      NH_natural_acaps,
       na.rm = T
     ),
     EMERGING_RISK_FRAGILITY_INSTITUTIONS = case_when(
@@ -115,7 +115,7 @@ riskflags <- globalrisk %>%
         Fr_REIGN_couprisk3m_norm,
         Fr_ACLED_event_same_month_difference_perc_norm,
         Fr_ACLED_fatal_same_month_difference_perc_norm,
-        Fr_conflict_acled,
+        Fr_conflict_acaps,
         Fr_state6m_norm,
         Fr_nonstate6m_norm,
         Fr_oneside6m_norm,
@@ -215,6 +215,35 @@ riskflags[paste0(names, "_plus1")] <- lapply(riskflags[names], function(xx) {
   ifelse(xx == 0, xx + 1, xx)
 })
 
+#Geometric means
+riskflags <- riskflags %>% 
+  rowwise() %>%
+  mutate(EMERGING_RISK_FRAGILITY_INSTITUTIONS_MULTIDIMENSIONAL = geometricmean(c(EMERGING_RISK_FRAGILITY_INSTITUTIONS_plus1, 
+                                                                                 EMERGING_RISK_MACROECONOMIC_EXPOSURE_TO_COVID_plus1), 
+                                                                               na.rm=T),
+         EMERGING_RISK_FRAGILITY_INSTITUTIONS_MULTIDIMENSIONAL_SQ = geometricmean(c(EXISTING_RISK_FRAGILITY_INSTITUTIONS_plus1, 
+                                                                                    EMERGING_RISK_FRAGILITY_INSTITUTIONS_MULTIDIMENSIONAL), 
+                                                                                  na.rm=T))
+
+#remove unnecessary variables                                                     
+riskflags <- riskflags %>% 
+  select(-contains("_plus1"))
+
+#Alternativ combined total scores
+altflag <- globalrisk
+names <- c("S_OCHA_Covid.vulnerability.index_norm", "H_Oxrollback_score_norm", 
+           "H_Covidgrowth_casesnorm", "H_Covidgrowth_deathsnorm", "H_HIS_Score_norm","H_new_cases_smoothed_per_million_norm", "H_new_deaths_smoothed_per_million_norm", 
+           "F_Proteus_Score_norm", "F_Fewsnet_Score_norm", "F_Artemis_Score_norm", 
+           "F_FAO_6mFPV_norm", "Fr_GPI_Score_norm", "Fr_ACLED_event_same_month_difference_perc_norm", 
+           "Fr_ACLED_fatal_same_month_difference_perc_norm", "D_WB_Overall_debt_distress_norm", 
+           "D_IMF_debt2020.2019_norm", "M_Economic_and_Financial_score_norm", 
+           "M_GDP_IMF_2019minus2020_norm", "M_GDP_WB_2019minus2020_norm", 
+           "NH_UKMO_TOTAL.RISK.NEXT.6.MONTHS_norm", "NH_GDAC_Hazard_Score_Norm", 
+           "Fr_INFORM_Fragility_Score_norm", "Fr_FSI_Score_norm", "Fr_FSI_2019minus2020_norm", 
+           "Fr_REIGN_couprisk3m_norm", "H_Covidproj_Projected_Deaths_._1M_norm")
+
+altflag[paste0(names,"_plus1")] <- lapply(altflag[names], function(xx){ifelse(xx==0, xx+1, xx)})
+
 #Calculate alternative variables
 altflag <- altflag %>%
   rowwise() %>%
@@ -264,14 +293,14 @@ altflag <- altflag %>%
            Fr_REIGN_couprisk3m_norm,
            Fr_ACLED_event_same_month_difference_perc_norm,
            Fr_ACLED_fatal_same_month_difference_perc_norm,
-           Fr_conflict_acled,
+           Fr_conflict_acaps,
            Fr_state6m_norm,
            Fr_nonstate6m_norm,
            Fr_oneside6m_norm),
            na.rm=T),
          NH_coefvar = cv(c(NH_UKMO_TOTAL.RISK.NEXT.6.MONTHS_norm,
                            NH_GDAC_Hazard_Score_Norm,NH_INFORM_Crisis_Norm, 
-                           NH_natural_acled),
+                           NH_natural_acaps),
                          na.rm = T),
          D_coefvar = cv(c(D_IMF_debt2020.2019_norm,
                           D_fiscalgdpnum_norm),
@@ -726,10 +755,11 @@ map2 <- ggplot(data = worldmap, mapping = aes(x = long, y = lat, group = group))
 
 #Join the maps and print to the system
 jointmap <- cowplot::plot_grid(map, map2, ncol = 1, align = c("hv"))
-print(jointmap)
+tmp_uri <- "/tmp/jointmap.png"
+ggsave(tmp_uri, jointmap, width = 11.5, height = 9.5)
 
-#Insert plot into the worksheet
-insertPlot(crxls, 1, xy = c("AA", 5), width = 11.5, height =9.5, fileType = "png", units = "in")
+# Insert plot into the worksheet
+insertImage(crxls, 1, tmp_uri, width = 11.5, height = 9.5, startRow = 5, startCol = "AA", units = "in")
 
 #----------------------------------------Save the final worksheet------------------------------------------------------
 saveWorkbook(crxls, file = "data/processed/Compound_Risk_Monitor.xlsx", overwrite = TRUE)
@@ -742,15 +772,19 @@ saveWorkbook(crxls, file = "data/processed/Compound_Risk_Monitor.xlsx", overwrit
 ##
 #
 
-globalriskflags <- left_join(riskset %>% select(-contains("RELIABILITY")), debtsheet, by = c("Countryname", "Country")) %>%
-  left_join(., foodsecurity, by = c("Countryname", "Country")) %>%
-  left_join(., fragilitysheet, by = c("Countryname", "Country")) %>%
-  left_join(., healthsheet, by = c("Countryname", "Country")) %>%
-  left_join(., macrosheet, by = c("Countryname", "Country")) %>%
-  left_join(., Naturalhazardsheet, by = c("Countryname", "Country")) %>%
+countries = read.csv('data/external/countrylist.csv')
+
+globalriskflags <- left_join(countries, riskset %>% select(-contains("RELIABILITY")), by = c("Country", 'Countryname')) %>%
+  left_join(., debtsheet, by = 'Country') %>%
+  left_join(., foodsecurity, by = 'Country') %>%
+  left_join(., fragilitysheet, by = 'Country') %>%
+  left_join(., healthsheet, by = 'Country') %>%
+  left_join(., macrosheet, by = 'Country') %>%
+  left_join(., Naturalhazardsheet, by = 'Country') %>%
   left_join(., Socioeconomic_sheet, by = c("Country")) %>%
-  left_join(., reliabilitysheet, by = c("Countryname", "Country")) %>%
-  left_join(., alt, by = c("Countryname", "Country")) %>%
-select(-c("X", contains(c("X.", "x.", "..", " "))))
+  left_join(., acapssheet, by = 'Country') %>%
+  left_join(., reliabilitysheet, by = c('Country', 'Countryname')) %>%
+  left_join(., alt, by = c('Country', 'Countryname')) %>%
+  select(-c("X", contains(c("X.", "x.", "..", " "))))
 
 write.csv(globalriskflags, file = "data/processed/Globalrisksheet.csv")

@@ -428,7 +428,7 @@ gdp <- normfuncneg(gdp,upperrisk, lowerrisk, "M_GDP_IMF_2019minus2020")
 #COVID Economic Stimulus Index
 #Load file
 url <- "http://web.boun.edu.tr/elgin/CESI_12.xlsx" #Note: may need to check for more recent versions
-destfile <- "Indicator_dataset/cesiraw.xlsx"
+destfile <- "data/external/cesiraw.xlsx"
 curl::curl_download(url, destfile)
 cesi <- read_excel(destfile)
 unlink(destfile)
@@ -623,15 +623,15 @@ acleddata <- aclednorm(acleddata, 400, 0, "Fr_ACLED_event_same_month_difference_
 acleddata <- aclednorm(acleddata, 400, 0, "Fr_ACLED_event_month_annual_difference_perc", "Fr_ACLED_event_last30d")
 acleddata <- aclednorm(acleddata, 800, 0, "Fr_ACLED_event_month_threeyear_difference_perc", "Fr_ACLED_event_last30d")
 
-write.csv(acleddata, "Indicator_dataset/ACLEDnormalised.csv")
+write.csv(acleddata, "data/processed/ACLEDnormalised.csv")
 
 #Load VIEWS data
 #Download and unzip file from View site
-download.file("http://ucdp.uu.se/downloads/views/predictions_cm.zip", "Indicator_dataset/Viewsrawzip")
+download.file("http://ucdp.uu.se/downloads/views/predictions_cm.zip", "data/external/Viewsrawzip")
 
-state_views <- read.csv(unz("Indicator_dataset/Viewsrawzip", "predictions_sb_cm/average_base_sb.csv"))
-nonstate_views <- read.csv(unz("Indicator_dataset/Viewsrawzip", "predictions_ns_cm/average_base_ns.csv"))
-oneside_views <- read.csv(unz("Indicator_dataset/Viewsrawzip", "predictions_os_cm/average_base_os.csv"))
+state_views <- read.csv(unz("data/external/Viewsrawzip", "predictions_sb_cm/average_base_sb.csv"))
+nonstate_views <- read.csv(unz("data/external/Viewsrawzip", "predictions_ns_cm/average_base_ns.csv"))
+oneside_views <- read.csv(unz("data/external/Viewsrawzip", "predictions_os_cm/average_base_os.csv"))
 
 #Calculate month converter
 elapsed_months <- function(end_date, start_date) {
@@ -860,7 +860,7 @@ gdac <- gdac %>%
                                                TRUE ~ 0)) %>%
   drop_na(Country)
 
-write.csv(gdac, "Indicator_dataset/gdaclistnormalised.csv")
+write.csv(gdac, "data/processed/gdaclistnormalised.csv")
 
 #INFORM CRISIS TRACKER
 informcrisis <- suppressMessages(read_csv("https://raw.githubusercontent.com/ljonestz/compoundriskdata/master/Indicator_dataset/INFORM_Crisis_raw.csv"))
@@ -876,7 +876,7 @@ informcrisis <- informcrisis %>%
          NH_INFORM_Crisis_Norm = case_when(NH_INFORM_Crisis_Type_Number == 1 ~ 10, 
                                            TRUE ~ 0)) 
 
-write.csv(informcrisis, "Indicator_dataset/INFORM_Crisis_normalised.csv")
+write.csv(informcrisis, "data/processed/INFORM_Crisis_normalised.csv")
 
 #INFORM Natural Hazard and Exposure rating
 informnathaz <- read.csv("https://raw.githubusercontent.com/ljonestz/compoundriskdata/master/Indicator_dataset/Inform_nathaz.csv")
@@ -966,7 +966,7 @@ acapslist <- acapslist %>%
   filter(country != "")
 
 #Save csv with full acapslist
-write.csv(acapslist, "Indicator_dataset/acaps.csv")
+write.csv(acapslist, "data/processed/acaps.csv")
 
 #List of countries with specific hazards
 conflictnams <- acapslist %>%

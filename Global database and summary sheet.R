@@ -56,7 +56,7 @@ globalrisk <- left_join(countrylist, healthsheet, by = "Country") %>%
   left_join(., macrosheet, by = "Country") %>%
   left_join(., Naturalhazardsheet, by = "Country") %>%
   left_join(., Socioeconomic_sheet, by = "Country") %>%
-  left_join(., acapssheet, by = "country") %>%
+  left_join(., acapssheet, by = "Country") %>%
   distinct(Country, .keep_all = TRUE) %>%
   drop_na(Country)
 

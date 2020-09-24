@@ -787,6 +787,4 @@ globalriskflags <- left_join(countries, riskset %>% select(-contains("RELIABILIT
   left_join(., alt, by = c('Country', 'Countryname')) %>%
   select(-c("X", contains(c("X.", "x.", "..", " "))))
 
-print(colnames(globalriskflags) %>% head)
-
 write.csv(globalriskflags, file = "data/processed/Globalrisksheet.csv")

@@ -30,6 +30,7 @@ remove_index <- function(df){
   if ("X" %in% colnames(df)) {
     df <- df %>% select(-X)
   }
+  
   return(df)
 }
 
@@ -37,7 +38,7 @@ remove_index <- function(df){
 read_risk_sheet <- function(file_name, root) {
   df <- read.csv(file.path(root, file_name)) %>%
     select(-starts_with("Countryname"))
-  df = remove_index(df)
+  df <- remove_index(df)
 
   return(df)
 }
@@ -52,7 +53,7 @@ Naturalhazardsheet <- read_risk_sheet("data/processed/Naturalhazards.csv", root)
 Socioeconomic_sheet <- read_risk_sheet("data/processed/Socioeconomic_sheet.csv", root)
 acapssheet <- read_risk_sheet("data/processed/acapssheet.csv", root)
 countrylist <- read.csv(file.path(root, "data/external/countrylist.csv")) %>%
-  remove_index
+  select(Country, Countryname)
 
 # Join datasets
 globalrisk <- left_join(countrylist, healthsheet, by = "Country") %>%
@@ -778,9 +779,9 @@ saveWorkbook(crxls, file = "data/processed/Compound_Risk_Monitor.xlsx", overwrit
 ##
 #
 
-countries = read.csv('data/external/countrylist.csv')
+# countries = read.csv('data/external/countrylist.csv')
 
-globalriskflags <- left_join(countries, riskset %>% select(-contains("RELIABILITY")), by = c("Country", 'Countryname')) %>%
+globalriskflags <- left_join(countrylist, riskset %>% select(-contains("RELIABILITY")), by = c("Country", 'Countryname')) %>%
   left_join(., debtsheet, by = 'Country') %>%
   left_join(., foodsecurity, by = 'Country') %>%
   left_join(., fragilitysheet, by = 'Country') %>%
@@ -791,6 +792,8 @@ globalriskflags <- left_join(countries, riskset %>% select(-contains("RELIABILIT
   left_join(., acapssheet, by = 'Country') %>%
   left_join(., reliabilitysheet, by = c('Country', 'Countryname')) %>%
   left_join(., alt, by = c('Country', 'Countryname')) %>%
-  select(-c("X", contains(c("X.", "x.", "..", " "))))
+  select(-contains(c("X.", "x.", "..", " "))) %>%
+  remove_index()
+
 
 write.csv(globalriskflags, file = "data/processed/Globalrisksheet.csv")

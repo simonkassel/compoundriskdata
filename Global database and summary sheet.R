@@ -26,12 +26,18 @@ if (length(args) > 0) {
 ##
 #
 
-read_risk_sheet <- function(file_name, root) {
-  df <- read.csv(file.path(root, file_name)) %>%
-    select(-starts_with("Countryname"))
+remove_index <- function(df){
   if ("X" %in% colnames(df)) {
     df <- df %>% select(-X)
   }
+  return(df)
+}
+
+
+read_risk_sheet <- function(file_name, root) {
+  df <- read.csv(file.path(root, file_name)) %>%
+    select(-starts_with("Countryname"))
+  df = remove_index(df)
 
   return(df)
 }
@@ -46,7 +52,7 @@ Naturalhazardsheet <- read_risk_sheet("data/processed/Naturalhazards.csv", root)
 Socioeconomic_sheet <- read_risk_sheet("data/processed/Socioeconomic_sheet.csv", root)
 acapssheet <- read_risk_sheet("data/processed/acapssheet.csv", root)
 countrylist <- read.csv(file.path(root, "data/external/countrylist.csv")) %>%
-  select(-X)
+  remove_index
 
 # Join datasets
 globalrisk <- left_join(countrylist, healthsheet, by = "Country") %>%

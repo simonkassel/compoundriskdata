@@ -52,7 +52,6 @@ fragilitysheet <- read_risk_sheet("data/processed/fragilitysheet.csv", root)
 macrosheet <- read_risk_sheet("data/processed/macrosheet.csv", root)
 Naturalhazardsheet <- read_risk_sheet("data/processed/Naturalhazards.csv", root)
 Socioeconomic_sheet <- read_risk_sheet("data/processed/Socioeconomic_sheet.csv", root)
-acapssheet <- read_risk_sheet("data/processed/acapssheet.csv", root)
 countrylist <- read.csv(file.path(root, "data/external/countrylist.csv")) %>%
   select(Country, Countryname)
 
@@ -64,7 +63,6 @@ globalrisk <- left_join(countrylist, healthsheet, by = "Country") %>%
   left_join(., macrosheet, by = "Country") %>%
   left_join(., Naturalhazardsheet, by = "Country") %>%
   left_join(., Socioeconomic_sheet, by = "Country") %>%
-  left_join(., acapssheet, by = "Country") %>%
   distinct(Country, .keep_all = TRUE) %>%
   drop_na(Country)
 
@@ -883,7 +881,6 @@ globalriskflags <- left_join(countrylist, riskset %>% select(-contains("RELIABIL
   left_join(., macrosheet, by = 'Country') %>%
   left_join(., Naturalhazardsheet, by = 'Country') %>%
   left_join(., Socioeconomic_sheet, by = c("Country")) %>%
-  left_join(., acapssheet, by = 'Country') %>%
   left_join(., reliabilitysheet, by = c('Country', 'Countryname')) %>%
   left_join(., alt, by = c('Country', 'Countryname')) %>%
   select(-contains(c("X.", "x.", "..", " "))) %>%

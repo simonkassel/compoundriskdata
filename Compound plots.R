@@ -40,8 +40,8 @@ world <- map_data("world")
 world <- world %>%
   dplyr::rename(Country = region) %>%
   dplyr::mutate(Country = suppressWarnings(countrycode(Country,
-    origin = "country.name",
-    destination = "iso3c"
+                                                       origin = "country.name",
+                                                       destination = "iso3c"
   )))
 
 # Join datasets with risk flags
@@ -127,11 +127,11 @@ p.matthree <- cor_pmat(varsthree, na.rm = T, use = "pairwise.complete.obs")
 
 # Plots
 plot <- ggcorrplot(corr,
-  hc.order = FALSE,
-  type = "lower",
-  p.mat = p.mat,
-  outline.col = "white",
-  colors = c("#6D9EC1", "white", "#E46726")
+                   hc.order = FALSE,
+                   type = "lower",
+                   p.mat = p.mat,
+                   outline.col = "white",
+                   colors = c("#6D9EC1", "white", "#E46726")
 ) +
   theme(
     plot.margin = unit(c(1, 1, 1, -0.5), "cm"),
@@ -142,10 +142,10 @@ plot <- ggcorrplot(corr,
   )
 
 plotone <- ggcorrplot(corrone,
-  type = "lower",
-  p.mat = p.matone,
-  outline.col = "white",
-  colors = c("#6D9EC1", "white", "#E46726")
+                      type = "lower",
+                      p.mat = p.matone,
+                      outline.col = "white",
+                      colors = c("#6D9EC1", "white", "#E46726")
 ) +
   theme(
     legend.position = "none",
@@ -153,11 +153,11 @@ plotone <- ggcorrplot(corrone,
   )
 
 plottwo <- ggcorrplot(corrtwo,
-  hc.order = FALSE,
-  type = "lower",
-  p.mat = p.mattwo,
-  outline.col = "white",
-  colors = c("#6D9EC1", "white", "#E46726")
+                      hc.order = FALSE,
+                      type = "lower",
+                      p.mat = p.mattwo,
+                      outline.col = "white",
+                      colors = c("#6D9EC1", "white", "#E46726")
 ) +
   theme(
     legend.position = "none",
@@ -165,11 +165,11 @@ plottwo <- ggcorrplot(corrtwo,
   )
 
 plotthree <- ggcorrplot(corrthree,
-  hc.order = FALSE,
-  type = "lower",
-  p.mat = p.matthree,
-  outline.col = "white",
-  colors = c("#6D9EC1", "white", "#E46726")
+                        hc.order = FALSE,
+                        type = "lower",
+                        p.mat = p.matthree,
+                        outline.col = "white",
+                        colors = c("#6D9EC1", "white", "#E46726")
 ) +
   theme(
     legend.position = "none",
@@ -411,10 +411,10 @@ rp.mat <- cor_pmat(rvar, na.rm = T, use = "pairwise.complete.obs")
 
 # Plot
 plot <- ggcorrplot(rcorr,
-  hc.order = FALSE,
-  p.mat = rp.mat,
-  outline.col = "white",
-  colors = c("#6D9EC1", "white", "#E46726")
+                   hc.order = FALSE,
+                   p.mat = rp.mat,
+                   outline.col = "white",
+                   colors = c("#6D9EC1", "white", "#E46726")
 ) +
   theme(
     plot.margin = unit(c(1, 1, 1, -0.5), "cm"),
@@ -673,10 +673,10 @@ slope <- ggplot(data = longli, aes(x = risk, y = new, group = Country)) +
     direction = "y"
   ) +
   geom_label(aes(label = new),
-    size = 3.5,
-    label.padding = unit(0.05, "lines"),
-    label.size = 0.0,
-    alpha = 0.6
+             size = 3.5,
+             label.padding = unit(0.05, "lines"),
+             label.size = 0.0,
+             alpha = 0.6
   ) +
   MySpecial +
   scale_colour_brewer(palette = "Set1")
@@ -706,17 +706,17 @@ for (i in seq_along(nm)) {
   ggthemr("fresh")
   theme_set(theme_classic(base_size = 16))
   plots[[i]] <- print(ggplot(diffs, aes_string(x = nm[i])) +
-    geom_histogram(aes(y = ..density..),
-      colour = "black", fill = "white"
-    ) +
-    ggtitle(print(nm[i])) +
-    xlab("Change in CR score (geomean - max)") +
-    ylab("") +
-    geom_vline(aes(xintercept = mean(nm[i])),
-      linetype = "dashed", size = 0.6
-    ) +
-    geom_density(alpha = 0.2) +
-    theme(plot.title = element_text(hjust = 0.5)))
+                        geom_histogram(aes(y = ..density..),
+                                       colour = "black", fill = "white"
+                        ) +
+                        ggtitle(print(nm[i])) +
+                        xlab("Change in CR score (geomean - max)") +
+                        ylab("") +
+                        geom_vline(aes(xintercept = mean(nm[i])),
+                                   linetype = "dashed", size = 0.6
+                        ) +
+                        geom_density(alpha = 0.2) +
+                        theme(plot.title = element_text(hjust = 0.5)))
 }
 
 # Arrange the plots
@@ -869,8 +869,8 @@ gtheme <- theme(
 )
 
 complot <- ggplot(riskflags, aes(TOTAL_EXISTING_COMPOUND_RISK_SCORE,
-  TOTAL_EMERGING_COMPOUND_RISK_SCORE,
-  color = Continent
+                                 TOTAL_EMERGING_COMPOUND_RISK_SCORE,
+                                 color = Continent
 )) +
   geom_count() +
   geom_smooth(method = "lm", se = F) +
@@ -1032,8 +1032,8 @@ alpha <- 0.7
 
 glob <- ggplot(dat_ggforce, aes(x = x, id = id, split = y, value = tt)) +
   geom_parallel_sets(aes(fill = existing_risk),
-    alpha = alpha, axis.width = 0.2,
-    n = 100, strength = 0.5
+                     alpha = alpha, axis.width = 0.2,
+                     n = 100, strength = 0.5
   ) +
   geom_parallel_sets_axes(
     axis.width = 0.25, fill = "gray95",
@@ -1060,28 +1060,28 @@ sankyreg <- function(reg) {
     filter(Continent == reg) %>%
     group_by(TOTAL_EXISTING_COMPOUND_RISK_SCORE, TOTAL_EMERGING_COMPOUND_RISK_SCORE) %>%
     count(Population)
-
+  
   testing <- test %>%
     mutate(new = paste(TOTAL_EXISTING_COMPOUND_RISK_SCORE, TOTAL_EMERGING_COMPOUND_RISK_SCORE)) %>%
     group_by(new) %>%
     summarise(tt = sum(Population, na.rm = T)) %>%
     ungroup()
-
+  
   testing$emerging_risk <- str_sub(testing$new, 2, 3)
   testing$existing_risk <- str_sub(testing$new, 0, 1)
-
+  
   dat <- testing %>%
     select(existing_risk, emerging_risk, tt)
-
+  
   dat_ggforce <- dat %>%
     gather_set_data(1:2) %>% # <- ggforce helper function
     arrange(x, existing_risk, desc(emerging_risk)) %>%
     mutate(x = as.factor(x))
-
+  
   ggplot(dat_ggforce, aes(x = x, id = id, split = y, value = tt)) +
     geom_parallel_sets(aes(fill = existing_risk),
-      alpha = alpha, axis.width = 0.2,
-      n = 100, strength = 0.5
+                       alpha = alpha, axis.width = 0.2,
+                       n = 100, strength = 0.5
     ) +
     geom_parallel_sets_axes(
       axis.width = 0.25, fill = "gray95",
@@ -1168,6 +1168,21 @@ ssamap <- worldmap %>%
   labs(fill = "Total # of risks") +
   theme(plot.title = element_text(hjust = 0.5))
 
-ggsave("Plots/Seamap.pdf", seamap, width = 8, height = 5)
-ggsave("Plots/Menamap.pdf", menamap, width = 8, height = 5)
-ggsave("Plots/Ssaamap.pdf", ssamap, width = 8, height = 5)
+lacmap <- worldmap %>%
+  mutate(Region = countrycode(Country, origin = "iso3c", destination = "region")) %>%
+  filter(Region == "Latin America & Caribbean") %>%
+  ggplot(mapping = aes(x = long, y = lat, group = group)) +
+  coord_fixed(1.3) +
+  geom_polygon(aes(fill = TOTAL_EMERGING_COMPOUND_RISK_SCORE_INCMEDIUM)) +
+  scale_fill_distiller(palette = "Reds", direction = 1) + # or direction=1
+  ggtitle("Total Emerging Compound Risk Score")  +
+  theme_void() +
+  labs(fill = "Total # of risks") +
+  theme(plot.title = element_text(hjust = 0.5))
+
+ggsave("Plots/Snapshots/Seamap.pdf", seamap, width = 8, height = 5)
+ggsave("Plots/Snapshots/Menamap.pdf", menamap, width = 8, height = 5)
+ggsave("Plots/Snapshots/Ssaamap.pdf", ssamap, width = 8, height = 5)
+ggsave("Plots/Snapshots/LACamap.pdf", lacmap, width = 8, height = 5)
+
+

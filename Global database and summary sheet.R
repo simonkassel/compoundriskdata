@@ -887,10 +887,6 @@ ggsave(tmp_uri, jointmap, width = 11.5, height = 9.5)
 # Insert plot into the worksheet
 insertImage(crxls, 1, tmp_uri, width = 11.5, height = 9.5, startRow = 5, startCol = "AA", units = "in")
 
-# Save plots
-ggsave("Plots/Snapshots/global_emerging_map.pdf", map2, width = 11.5, height = 9.5)
-ggsave("Plots/Snapshots/global_existing_map.pdf", map, width = 11.5, height = 9.5)
-
 #----------------------------------------Save the final worksheet------------------------------------------------------
 saveWorkbook(crxls, file = "data/processed/Compound_Risk_Monitor.xlsx", overwrite = TRUE)
 
